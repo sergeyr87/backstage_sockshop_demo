@@ -20,6 +20,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: front-end
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=front-end'
     prometheus.io/scrape: 'true'
   tags:
     - frontend
@@ -44,6 +45,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: carts
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=carts'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -68,6 +70,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: carts-db
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=carts-db'
   tags:
     - database
     - mongodb
@@ -86,6 +89,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: catalogue
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=catalogue'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -109,6 +113,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: catalogue-db
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=catalogue-db'
   tags:
     - database
     - mysql
@@ -127,6 +132,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: orders
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=orders'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -151,6 +157,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: orders-db
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=orders-db'
   tags:
     - database
     - mongodb
@@ -169,6 +176,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: payment
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=payment'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -191,6 +199,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: shipping
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=shipping'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -213,6 +222,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: user
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=user'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -237,6 +247,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: user-db
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=user-db'
   tags:
     - database
     - mongodb
@@ -255,6 +266,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: queue-master
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=queue-master'
     prometheus.io/scrape: 'true'
   tags:
     - microservice
@@ -278,6 +290,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: rabbitmq
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=rabbitmq'
     prometheus.io/scrape: 'true'
     prometheus.io/port: '9090'
   tags:
@@ -299,6 +312,7 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: session-db
     backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'name=session-db'
   tags:
     - database
     - redis
@@ -511,288 +525,3 @@ spec:
           responses:
             '200':
               description: List of customers
-
-
-# Add these Kubernetes resources to your existing catalog-info.yaml
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: sock-shop-namespace
-  title: Sock Shop Namespace
-  description: Kubernetes namespace for the sock shop application
-  annotations:
-    backstage.io/kubernetes-id: sock-shop
-    backstage.io/kubernetes-namespace: sock-shop
-  tags:
-    - kubernetes
-    - namespace
-spec:
-  type: kubernetes-namespace
-  lifecycle: production
-  owner: platform-team
-  system: sock-shop
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: carts-deployment
-  title: Carts Deployment
-  description: Kubernetes deployment for the carts service
-  annotations:
-    backstage.io/kubernetes-id: carts
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=carts'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:carts
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: carts-service
-  title: Carts Service
-  description: Kubernetes service for the carts application
-  annotations:
-    backstage.io/kubernetes-id: carts
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=carts'
-  tags:
-    - kubernetes
-    - service
-spec:
-  type: kubernetes-service
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - resource:carts-deployment
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: catalogue-deployment
-  title: Catalogue Deployment
-  description: Kubernetes deployment for the catalogue service
-  annotations:
-    backstage.io/kubernetes-id: catalogue
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=catalogue'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:catalogue
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: catalogue-service
-  title: Catalogue Service
-  description: Kubernetes service for the catalogue application
-  annotations:
-    backstage.io/kubernetes-id: catalogue
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=catalogue'
-  tags:
-    - kubernetes
-    - service
-spec:
-  type: kubernetes-service
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - resource:catalogue-deployment
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: front-end-deployment
-  title: Frontend Deployment
-  description: Kubernetes deployment for the frontend service
-  annotations:
-    backstage.io/kubernetes-id: front-end
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=front-end'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: frontend-team
-  system: sock-shop
-  dependsOn:
-    - component:front-end
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: front-end-service
-  title: Frontend Service
-  description: Kubernetes NodePort service for the frontend application
-  annotations:
-    backstage.io/kubernetes-id: front-end
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=front-end'
-  tags:
-    - kubernetes
-    - service
-    - nodeport
-spec:
-  type: kubernetes-service
-  lifecycle: production
-  owner: frontend-team
-  system: sock-shop
-  dependsOn:
-    - resource:front-end-deployment
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: orders-deployment
-  title: Orders Deployment
-  description: Kubernetes deployment for the orders service
-  annotations:
-    backstage.io/kubernetes-id: orders
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=orders'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:orders
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: payment-deployment
-  title: Payment Deployment
-  description: Kubernetes deployment for the payment service
-  annotations:
-    backstage.io/kubernetes-id: payment
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=payment'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:payment
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: shipping-deployment
-  title: Shipping Deployment
-  description: Kubernetes deployment for the shipping service
-  annotations:
-    backstage.io/kubernetes-id: shipping
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=shipping'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:shipping
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: user-deployment
-  title: User Deployment
-  description: Kubernetes deployment for the user service
-  annotations:
-    backstage.io/kubernetes-id: user
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=user'
-  tags:
-    - kubernetes
-    - deployment
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
-  dependsOn:
-    - component:user
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: rabbitmq-deployment
-  title: RabbitMQ Deployment
-  description: Kubernetes deployment for the RabbitMQ message broker
-  annotations:
-    backstage.io/kubernetes-id: rabbitmq
-    backstage.io/kubernetes-namespace: sock-shop
-    backstage.io/kubernetes-label-selector: 'name=rabbitmq'
-  tags:
-    - kubernetes
-    - deployment
-    - messaging
-spec:
-  type: kubernetes-deployment
-  lifecycle: production
-  owner: platform-team
-  system: sock-shop
-  dependsOn:
-    - component:rabbitmq
-
----
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: sock-shop-cluster
-  title: Sock Shop Kubernetes Cluster
-  description: The Kubernetes cluster hosting the sock shop application
-  annotations:
-    backstage.io/kubernetes-cluster: sock-shop-cluster
-  tags:
-    - kubernetes
-    - cluster
-    - infrastructure
-spec:
-  type: kubernetes-cluster
-  lifecycle: production
-  owner: platform-team
-  system: sock-shop              

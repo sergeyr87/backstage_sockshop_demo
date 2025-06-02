@@ -51,8 +51,6 @@ spec:
   lifecycle: production
   owner: frontend-team
   system: sock-shop
-  providesApis:
-    - front-end-api
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -298,8 +296,6 @@ spec:
   system: sock-shop
   dependsOn:
     - component:rabbitmq
-  providesApis:
-    - queue-api
 
 ---
 apiVersion: backstage.io/v1alpha1

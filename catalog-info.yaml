@@ -13,8 +13,8 @@ spec:
   owner: john@example.com
   lifecycle: experimental
 
----
-apiVersion: backstage.io/v1alpha1
+  ---
+  apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: sock-shop
@@ -347,24 +347,6 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: front-end-api
-  title: Frontend API
-  description: HTTP API for the frontend service
-spec:
-  type: openapi
-  lifecycle: production
-  owner: frontend-team
-  system: sock-shop
-  definition: |
-    openapi: 3.0.0
-    info:
-      title: Frontend API
-      version: 1.0.0
-
----
-apiVersion: backstage.io/v1alpha1
-kind: API
-metadata:
   name: carts-api
   title: Carts API
   description: HTTP API for cart management
@@ -373,6 +355,31 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Carts API
+      version: 1.0.0
+      description: API for managing shopping carts
+    paths:
+      /carts:
+        get:
+          summary: Get all carts
+          responses:
+            '200':
+              description: List of carts
+      /carts/{id}:
+        get:
+          summary: Get cart by ID
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            '200':
+              description: Cart details
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -386,6 +393,31 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Catalogue API
+      version: 1.0.0
+      description: API for product catalog management
+    paths:
+      /catalogue:
+        get:
+          summary: Get all products
+          responses:
+            '200':
+              description: List of products
+      /catalogue/{id}:
+        get:
+          summary: Get product by ID
+          parameters:
+            - name: id
+              in: path
+              required: true
+              schema:
+                type: string
+          responses:
+            '200':
+              description: Product details
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -399,6 +431,24 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Orders API
+      version: 1.0.0
+      description: API for order processing and management
+    paths:
+      /orders:
+        get:
+          summary: Get all orders
+          responses:
+            '200':
+              description: List of orders
+        post:
+          summary: Create new order
+          responses:
+            '201':
+              description: Order created
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -412,6 +462,25 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Payment API
+      version: 1.0.0
+      description: API for payment processing
+    paths:
+      /paymentAuth:
+        post:
+          summary: Authorize payment
+          responses:
+            '200':
+              description: Payment authorized
+      /health:
+        get:
+          summary: Health check
+          responses:
+            '200':
+              description: Service healthy
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -425,6 +494,25 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Shipping API
+      version: 1.0.0
+      description: API for shipping and delivery management
+    paths:
+      /shipping:
+        post:
+          summary: Calculate shipping cost
+          responses:
+            '200':
+              description: Shipping cost calculated
+      /health:
+        get:
+          summary: Health check
+          responses:
+            '200':
+              description: Service healthy
 
 ---
 apiVersion: backstage.io/v1alpha1
@@ -438,16 +526,28 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
-
----
-apiVersion: backstage.io/v1alpha1
-kind: API
-metadata:
-  name: queue-api
-  title: Queue API
-  description: HTTP API for queue management
-spec:
-  type: openapi
-  lifecycle: production
-  owner: backend-team
-  system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: User API
+      version: 1.0.0
+      description: API for user management and authentication
+    paths:
+      /register:
+        post:
+          summary: Register new user
+          responses:
+            '200':
+              description: User registered
+      /login:
+        get:
+          summary: User login
+          responses:
+            '200':
+              description: Login successful
+      /customers:
+        get:
+          summary: Get all customers
+          responses:
+            '200':
+              description: List of customers

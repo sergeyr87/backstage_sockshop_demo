@@ -13,8 +13,8 @@ spec:
   owner: john@example.com
   lifecycle: experimental
 
-  ---
-  apiVersion: backstage.io/v1alpha1
+---
+apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: sock-shop
@@ -26,7 +26,6 @@ metadata:
 spec:
   owner: platform-team
   domain: e-commerce
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -51,7 +50,6 @@ spec:
   lifecycle: production
   owner: frontend-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -76,7 +74,6 @@ spec:
     - component:carts-db
   providesApis:
     - carts-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -95,7 +92,6 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -119,7 +115,6 @@ spec:
     - component:catalogue-db
   providesApis:
     - catalogue-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -138,7 +133,6 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -163,7 +157,6 @@ spec:
     - component:orders-db
   providesApis:
     - orders-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -182,7 +175,6 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -205,7 +197,6 @@ spec:
   system: sock-shop
   providesApis:
     - payment-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -228,7 +219,6 @@ spec:
   system: sock-shop
   providesApis:
     - shipping-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -253,7 +243,6 @@ spec:
     - component:user-db
   providesApis:
     - user-api
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -272,7 +261,6 @@ spec:
   lifecycle: production
   owner: backend-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -296,7 +284,6 @@ spec:
   system: sock-shop
   dependsOn:
     - component:rabbitmq
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -318,7 +305,6 @@ spec:
   lifecycle: production
   owner: platform-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -338,7 +324,6 @@ spec:
   lifecycle: production
   owner: platform-team
   system: sock-shop
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -376,7 +361,6 @@ spec:
           responses:
             '200':
               description: Cart details
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -414,7 +398,6 @@ spec:
           responses:
             '200':
               description: Product details
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -445,7 +428,6 @@ spec:
           responses:
             '201':
               description: Order created
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -477,7 +459,6 @@ spec:
           responses:
             '200':
               description: Service healthy
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API
@@ -509,7 +490,6 @@ spec:
           responses:
             '200':
               description: Service healthy
-
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API

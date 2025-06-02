@@ -1,0 +1,453 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: demo02
+  description: An example of a Backstage application.
+  # Example for optional annotations
+  annotations:
+    'backstage.io/kubernetes-namespace': sock-shop
+  #   github.com/project-slug: backstage/backstage
+  #   backstage.io/techdocs-ref: dir:.
+spec:
+  type: website
+  owner: john@example.com
+  lifecycle: experimental
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: sock-shop
+  title: Sock Shop E-commerce Platform
+  description: A microservices-based e-commerce application for selling socks
+  annotations:
+    backstage.io/kubernetes-namespace: sock-shop
+    backstage.io/kubernetes-label-selector: 'app.kubernetes.io/part-of=sock-shop'
+spec:
+  owner: platform-team
+  domain: e-commerce
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: front-end
+  title: Frontend Service
+  description: Web frontend for the sock shop application
+  annotations:
+    backstage.io/kubernetes-id: front-end
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - frontend
+    - web
+    - nodejs
+  links:
+    - url: http://your-cluster-ip:30001
+      title: Frontend Application
+      icon: web
+spec:
+  type: website
+  lifecycle: production
+  owner: frontend-team
+  system: sock-shop
+  providesApis:
+    - front-end-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: carts
+  title: Shopping Cart Service
+  description: Manages user shopping carts
+  annotations:
+    backstage.io/kubernetes-id: carts
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - java
+    - spring-boot
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  dependsOn:
+    - component:carts-db
+  providesApis:
+    - carts-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: carts-db
+  title: Carts Database
+  description: MongoDB database for shopping cart data
+  annotations:
+    backstage.io/kubernetes-id: carts-db
+    backstage.io/kubernetes-namespace: sock-shop
+  tags:
+    - database
+    - mongodb
+spec:
+  type: database
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: catalogue
+  title: Product Catalogue Service
+  description: Manages product catalog and inventory
+  annotations:
+    backstage.io/kubernetes-id: catalogue
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - go
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  dependsOn:
+    - component:catalogue-db
+  providesApis:
+    - catalogue-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: catalogue-db
+  title: Catalogue Database
+  description: MySQL database for product catalog data
+  annotations:
+    backstage.io/kubernetes-id: catalogue-db
+    backstage.io/kubernetes-namespace: sock-shop
+  tags:
+    - database
+    - mysql
+spec:
+  type: database
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: orders
+  title: Order Processing Service
+  description: Handles order creation and processing
+  annotations:
+    backstage.io/kubernetes-id: orders
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - java
+    - spring-boot
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  dependsOn:
+    - component:orders-db
+  providesApis:
+    - orders-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: orders-db
+  title: Orders Database
+  description: MongoDB database for order data
+  annotations:
+    backstage.io/kubernetes-id: orders-db
+    backstage.io/kubernetes-namespace: sock-shop
+  tags:
+    - database
+    - mongodb
+spec:
+  type: database
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: payment
+  title: Payment Service
+  description: Processes payments for orders
+  annotations:
+    backstage.io/kubernetes-id: payment
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - go
+    - payment
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  providesApis:
+    - payment-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: shipping
+  title: Shipping Service
+  description: Manages shipping and delivery
+  annotations:
+    backstage.io/kubernetes-id: shipping
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - java
+    - spring-boot
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  providesApis:
+    - shipping-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: user
+  title: User Management Service
+  description: Handles user registration, authentication, and profiles
+  annotations:
+    backstage.io/kubernetes-id: user
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - go
+    - authentication
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  dependsOn:
+    - component:user-db
+  providesApis:
+    - user-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: user-db
+  title: User Database
+  description: MongoDB database for user data
+  annotations:
+    backstage.io/kubernetes-id: user-db
+    backstage.io/kubernetes-namespace: sock-shop
+  tags:
+    - database
+    - mongodb
+spec:
+  type: database
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: queue-master
+  title: Queue Master Service
+  description: Manages message queuing for order processing
+  annotations:
+    backstage.io/kubernetes-id: queue-master
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+  tags:
+    - microservice
+    - java
+    - spring-boot
+    - messaging
+spec:
+  type: service
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+  dependsOn:
+    - component:rabbitmq
+  providesApis:
+    - queue-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: rabbitmq
+  title: RabbitMQ Message Broker
+  description: Message broker for asynchronous communication
+  annotations:
+    backstage.io/kubernetes-id: rabbitmq
+    backstage.io/kubernetes-namespace: sock-shop
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '9090'
+  tags:
+    - messaging
+    - rabbitmq
+    - infrastructure
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: session-db
+  title: Session Database
+  description: Redis database for session storage
+  annotations:
+    backstage.io/kubernetes-id: session-db
+    backstage.io/kubernetes-namespace: sock-shop
+  tags:
+    - database
+    - redis
+    - session-storage
+spec:
+  type: database
+  lifecycle: production
+  owner: platform-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: front-end-api
+  title: Frontend API
+  description: HTTP API for the frontend service
+spec:
+  type: openapi
+  lifecycle: production
+  owner: frontend-team
+  system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: Frontend API
+      version: 1.0.0
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: carts-api
+  title: Carts API
+  description: HTTP API for cart management
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: catalogue-api
+  title: Catalogue API
+  description: HTTP API for product catalog
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: orders-api
+  title: Orders API
+  description: HTTP API for order processing
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: payment-api
+  title: Payment API
+  description: HTTP API for payment processing
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: shipping-api
+  title: Shipping API
+  description: HTTP API for shipping management
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: user-api
+  title: User API
+  description: HTTP API for user management
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: queue-api
+  title: Queue API
+  description: HTTP API for queue management
+spec:
+  type: openapi
+  lifecycle: production
+  owner: backend-team
+  system: sock-shop

@@ -1,0 +1,191 @@
+# skeleton/README.md
+
+# ${{ values.name | title }}
+
+${{ values.description }}
+
+## Overview
+
+This service is part of the Sock Shop microservices platform and is written in **${{ values.language }}**.
+
+- **Owner**: ${{ values.owner }}
+- **Port**: ${{ values.port }}
+{%- if values.database != 'none' %}
+- **Database**: ${{ values.database }}
+{%- endif %}
+
+## Quick Start
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone ${{ values.destination.protocol }}://${{ values.destination.host }}/${{ values.destination.owner }}/${{ values.destination.repo }}
+cd ${{ values.destination.repo }}
+
+{%- if values.language == 'java' %}
+# Build and run (Java/Spring Boot)
+./mvnw spring-boot:run
+
+{%- elif values.language == 'go' %}
+# Build and run (Go)
+go mod download
+go run main.go
+
+{%- elif values.language == 'nodejs' %}
+# Build and run (Node.js)
+npm install
+npm start
+
+{%- elif values.language == 'python' %}
+# Build and run (Python)
+pip install -r requirements.txt
+python app.py
+{%- endif %}
+```
+
+### Docker
+
+```bash
+# Build Docker image
+docker build -t ${{ values.name }}:latest .
+
+# Run container
+docker run -p ${{ values.port }}:${{ values.port }} ${{ values.name }}:latest
+```
+
+### Kubernetes Deployment
+
+```bash
+# Deploy to Kubernetes
+kubectl apply -f k8s-manifests/
+
+# Check deployment status
+kubectl get pods -n ${{ values.namespace }} -l name=${{ values.name }}
+
+# View logs
+kubectl logs -n ${{ values.namespace }} -l name=${{ values.name }} -f
+```
+
+## API Endpoints
+
+- `GET /health` - Health check endpoint
+- `GET /${{ values.name }}` - Main service endpoint
+
+## Configuration
+
+### Environment Variables
+
+{%- if values.database == 'mongodb' %}
+- `DB_HOST` - MongoDB connection string (default: `${{ values.name }}-db:27017`)
+{%- elif values.database == 'mysql' %}
+- `DB_HOST` - MySQL host (default: `${{ values.name }}-db:3306`)
+- `DB_USER` - MySQL username (default: `root`)
+- `DB_PASSWORD` - MySQL password
+- `DB_NAME` - Database name (default: `${{ values.name }}db`)
+{%- elif values.database == 'redis' %}
+- `REDIS_HOST` - Redis host (default: `${{ values.name }}-db:6379`)
+{%- elif values.database == 'postgresql' %}
+- `DB_HOST` - PostgreSQL host (default: `${{ values.name }}-db:5432`)
+- `DB_USER` - PostgreSQL username (default: `postgres`)
+- `DB_PASSWORD` - PostgreSQL password
+- `DB_NAME` - Database name (default: `${{ values.name }}db`)
+{%- endif %}
+
+### Resource Limits
+
+- **CPU Limit**: ${{ values.cpu_limit }}
+- **Memory Limit**: ${{ values.memory_limit }}
+- **Replicas**: ${{ values.replicas }}
+
+## Monitoring
+
+{%- if values.enable_monitoring %}
+This service exposes Prometheus metrics at `/metrics` endpoint.
+
+### Available Metrics
+
+- HTTP request duration
+- HTTP request count
+- Database connection pool metrics
+- Custom business metrics
+{%- else %}
+Monitoring is currently disabled for this service.
+{%- endif %}
+
+## Architecture
+
+This service follows the Sock Shop microservices architecture patterns:
+
+- **Language**: ${{ values.language }}
+- **Database**: ${{ values.database if values.database != 'none' else 'None' }}
+- **Communication**: HTTP REST API
+- **Deployment**: Kubernetes with Helm
+- **Monitoring**: Prometheus + Grafana
+- **Logging**: Centralized logging with ELK stack
+
+## Development Guidelines
+
+### Code Style
+
+{%- if values.language == 'java' %}
+- Follow Google Java Style Guide
+- Use Spring Boot best practices
+- Write unit tests with JUnit 5
+{%- elif values.language == 'go' %}
+- Follow Go standard formatting (gofmt)
+- Use Go modules for dependency management
+- Write tests with Go testing package
+{%- elif values.language == 'nodejs' %}
+- Follow Airbnb JavaScript Style Guide
+- Use ESLint for code linting
+- Write tests with Jest
+{%- elif values.language == 'python' %}
+- Follow PEP 8 style guide
+- Use Black for code formatting
+- Write tests with pytest
+{%- endif %}
+
+### Testing
+
+```bash
+{%- if values.language == 'java' %}
+# Run unit tests
+./mvnw test
+
+# Run integration tests
+./mvnw integration-test
+{%- elif values.language == 'go' %}
+# Run tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+{%- elif values.language == 'nodejs' %}
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+{%- elif values.language == 'python' %}
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov=${{ values.name }}
+{%- endif %}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## Support
+
+- **Team**: ${{ values.owner }}
+- **Documentation**: [Backstage Catalog](${{ values.destination.protocol }}://${{ values.destination.host }}/catalog/default/component/${{ values.name }})
+- **Issues**: [GitHub Issues](${{ values.destination.protocol }}://${{ values.destination.host }}/${{ values.destination.owner }}/${{ values.destination.repo }}/issues)

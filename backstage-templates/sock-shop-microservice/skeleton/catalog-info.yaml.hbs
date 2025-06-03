@@ -1,0 +1,112 @@
+# skeleton/catalog-info.yaml - This gets filled in by the template
+
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  title: ${{ values.name | title }}
+  description: ${{ values.description }}
+  annotations:
+    backstage.io/kubernetes-id: ${{ values.name }}
+    backstage.io/kubernetes-namespace: ${{ values.namespace }}
+    backstage.io/kubernetes-label-selector: 'name=${{ values.name }}'
+    {%- if values.enable_monitoring %}
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/metrics'
+    prometheus.io/port: '${{ values.port }}'
+    {%- endif %}
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-location: url:${{ values.destination.protocol }}://${{ values.destination.host }}/${{ values.destination.owner }}/${{ values.destination.repo }}
+  tags:
+    - microservice
+    - ${{ values.language }}
+    - sock-shop
+    {%- if values.database != 'none' %}
+    - ${{ values.database }}
+    {%- endif %}
+  links:
+    - url: http://your-cluster-ip:30001/${{ values.name }}
+      title: Service Endpoint
+      icon: web
+spec:
+  type: service
+  lifecycle: production
+  owner: ${{ values.owner }}
+  system: sock-shop
+  {%- if values.database != 'none' %}
+  dependsOn:
+    - component:${{ values.name }}-db
+  {%- endif %}
+  providesApis:
+    - ${{ values.name }}-api
+
+---
+{%- if values.database != 'none' %}
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}-db
+  title: ${{ values.name | title }} Database
+  description: ${{ values.database | title }} database for ${{ values.name }}
+  annotations:
+    backstage.io/kubernetes-id: ${{ values.name }}-db
+    backstage.io/kubernetes-namespace: ${{ values.namespace }}
+    backstage.io/kubernetes-label-selector: 'name=${{ values.name }}-db'
+  tags:
+    - database
+    - ${{ values.database }}
+spec:
+  type: database
+  lifecycle: production
+  owner: ${{ values.owner }}
+  system: sock-shop
+{%- endif %}
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ${{ values.name }}-api
+  title: ${{ values.name | title }} API
+  description: HTTP API for ${{ values.name }}
+spec:
+  type: openapi
+  lifecycle: production
+  owner: ${{ values.owner }}
+  system: sock-shop
+  definition: |
+    openapi: 3.0.0
+    info:
+      title: ${{ values.name | title }} API
+      version: 1.0.0
+      description: API for ${{ values.description }}
+    servers:
+      - url: http://${{ values.name }}.${{ values.namespace }}.svc.cluster.local:${{ values.port }}
+        description: Kubernetes service endpoint
+    paths:
+      /health:
+        get:
+          summary: Health check
+          responses:
+            '200':
+              description: Service is healthy
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: "healthy"
+      /${{ values.name }}:
+        get:
+          summary: Get ${{ values.name }} resources
+          responses:
+            '200':
+              description: List of resources
+              content:
+                application/json:
+                  schema:
+                    type: array
+                    items:
+                      type: object

@@ -1,0 +1,202 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: sock-shop-microservice
+  title: Sock Shop Microservice
+  description: Create a new microservice for the Sock Shop platform
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - recommended
+    - microservice
+    - sock-shop
+    - java
+    - go
+spec:
+  owner: platform-team
+  type: service
+  
+  parameters:
+    - title: Service Information
+      required:
+        - name
+        - description
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the service
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+          ui:help: 'Use lowercase letters, numbers, and hyphens only'
+        description:
+          title: Description
+          type: string
+          description: Brief description of what this service does
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the service
+          enum:
+            - backend-team
+            - frontend-team
+            - platform-team
+          enumNames:
+            - Backend Team
+            - Frontend Team  
+            - Platform Team
+          default: backend-team
+
+    - title: Technical Configuration
+      required:
+        - language
+        - port
+      properties:
+        language:
+          title: Programming Language
+          type: string
+          description: Programming language for the service
+          enum:
+            - java
+            - go
+            - nodejs
+            - python
+          enumNames:
+            - Java (Spring Boot)
+            - Go
+            - Node.js
+            - Python
+          default: java
+        port:
+          title: Service Port
+          type: integer
+          description: Port the service will listen on
+          default: 80
+          minimum: 1
+          maximum: 65535
+        database:
+          title: Database Type
+          type: string
+          description: Database required for this service
+          enum:
+            - none
+            - mongodb
+            - mysql
+            - redis
+            - postgresql
+          enumNames:
+            - No Database
+            - MongoDB
+            - MySQL
+            - Redis
+            - PostgreSQL
+          default: mongodb
+
+    - title: Deployment Configuration
+      required:
+        - replicas
+        - cpu_limit
+        - memory_limit
+      properties:
+        replicas:
+          title: Initial Replicas
+          type: integer
+          description: Number of initial replicas
+          default: 1
+          minimum: 1
+          maximum: 10
+        cpu_limit:
+          title: CPU Limit
+          type: string
+          description: CPU limit for the container
+          default: "200m"
+          enum:
+            - "100m"
+            - "200m"
+            - "300m"
+            - "500m"
+            - "1000m"
+        memory_limit:
+          title: Memory Limit
+          type: string
+          description: Memory limit for the container
+          default: "256Mi"
+          enum:
+            - "128Mi"
+            - "256Mi"
+            - "512Mi"
+            - "1Gi"
+            - "2Gi"
+        enable_monitoring:
+          title: Enable Prometheus Monitoring
+          type: boolean
+          description: Enable Prometheus metrics collection
+          default: true
+
+    - title: Repository Information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+              - gitlab.com
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          language: ${{ parameters.language }}
+          port: ${{ parameters.port }}
+          database: ${{ parameters.database }}
+          replicas: ${{ parameters.replicas }}
+          cpu_limit: ${{ parameters.cpu_limit }}
+          memory_limit: ${{ parameters.memory_limit }}
+          enable_monitoring: ${{ parameters.enable_monitoring }}
+          namespace: sock-shop
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+
+    - id: publish
+      name: Publish to Repository
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        repoVariables:
+          SERVICE_NAME: ${{ parameters.name }}
+          SERVICE_PORT: ${{ parameters.port }}
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+    - id: create-kubernetes-resources
+      name: Create Kubernetes Resources
+      action: kubernetes:apply
+      input:
+        manifestPath: ./k8s-manifests
+        clusterUrl: ${{ parameters.cluster_url || 'https://kubernetes.default.svc' }}
+        
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

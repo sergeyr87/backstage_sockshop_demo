@@ -1,0 +1,235 @@
+# skeleton/k8s-manifests/deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.name }}
+  labels:
+    name: ${{ values.name }}
+    app.kubernetes.io/name: ${{ values.name }}
+    app.kubernetes.io/part-of: sock-shop
+    app.kubernetes.io/version: "1.0.0"
+  namespace: ${{ values.namespace }}
+spec:
+  replicas: ${{ values.replicas }}
+  selector:
+    matchLabels:
+      name: ${{ values.name }}
+  template:
+    metadata:
+      labels:
+        name: ${{ values.name }}
+        app.kubernetes.io/name: ${{ values.name }}
+        app.kubernetes.io/part-of: sock-shop
+    spec:
+      containers:
+      - name: ${{ values.name }}
+        image: ${{ values.destination.owner }}/${{ values.name }}:latest
+        {%- if values.language == 'java' %}
+        env:
+         - name: JAVA_OPTS
+           value: -Xms64m -Xmx128m -XX:+UseG1GC -Djava.security.egd=file:/dev/urandom -Dspring.zipkin.enabled=false
+        {%- endif %}
+        resources:
+          limits:
+            cpu: ${{ values.cpu_limit }}
+            memory: ${{ values.memory_limit }}
+          requests:
+            cpu: "{{ (values.cpu_limit | replace('m', '') | int / 2) }}m"
+            memory: "{{ (values.memory_limit | replace('Mi', '') | int / 2) }}Mi"
+        ports:
+        - containerPort: ${{ values.port }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          capabilities:
+            drop:
+              - all
+            add:
+              - NET_BIND_SERVICE
+          readOnlyRootFilesystem: true
+        {%- if values.language in ['java', 'nodejs'] %}
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-volume
+        {%- endif %}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ${{ values.port }}
+          initialDelaySeconds: 300
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ${{ values.port }}
+          initialDelaySeconds: 180
+          periodSeconds: 5
+        {%- if values.database != 'none' %}
+        env:
+        {%- if values.database == 'mongodb' %}
+        - name: DB_HOST
+          value: ${{ values.name }}-db:27017
+        {%- elif values.database == 'mysql' %}
+        - name: DB_HOST
+          value: ${{ values.name }}-db:3306
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          value: password
+        - name: DB_NAME
+          value: ${{ values.name }}db
+        {%- elif values.database == 'redis' %}
+        - name: REDIS_HOST
+          value: ${{ values.name }}-db:6379
+        {%- elif values.database == 'postgresql' %}
+        - name: DB_HOST
+          value: ${{ values.name }}-db:5432
+        - name: DB_USER
+          value: postgres
+        - name: DB_PASSWORD
+          value: password
+        - name: DB_NAME
+          value: ${{ values.name }}db
+        {%- endif %}
+        {%- endif %}
+      {%- if values.language in ['java', 'nodejs'] %}
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+      {%- endif %}
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${{ values.name }}
+  {%- if values.enable_monitoring %}
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/path: '/metrics'
+    prometheus.io/port: '${{ values.port }}'
+  {%- endif %}
+  labels:
+    name: ${{ values.name }}
+    app.kubernetes.io/name: ${{ values.name }}
+    app.kubernetes.io/part-of: sock-shop
+  namespace: ${{ values.namespace }}
+spec:
+  ports:
+  - port: ${{ values.port }}
+    targetPort: ${{ values.port }}
+    name: http
+  selector:
+    name: ${{ values.name }}
+
+{%- if values.database != 'none' %}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.name }}-db
+  labels:
+    name: ${{ values.name }}-db
+    app.kubernetes.io/name: ${{ values.name }}-db
+    app.kubernetes.io/part-of: sock-shop
+  namespace: ${{ values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ${{ values.name }}-db
+  template:
+    metadata:
+      labels:
+        name: ${{ values.name }}-db
+        app.kubernetes.io/name: ${{ values.name }}-db
+        app.kubernetes.io/part-of: sock-shop
+    spec:
+      containers:
+      - name: ${{ values.name }}-db
+        {%- if values.database == 'mongodb' %}
+        image: mongo:4.4
+        ports:
+        - name: mongo
+          containerPort: 27017
+        {%- elif values.database == 'mysql' %}
+        image: mysql:8.0
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: password
+          - name: MYSQL_DATABASE
+            value: ${{ values.name }}db
+        ports:
+        - name: mysql
+          containerPort: 3306
+        {%- elif values.database == 'redis' %}
+        image: redis:alpine
+        ports:
+        - name: redis
+          containerPort: 6379
+        {%- elif values.database == 'postgresql' %}
+        image: postgres:13
+        env:
+          - name: POSTGRES_PASSWORD
+            value: password
+          - name: POSTGRES_DB
+            value: ${{ values.name }}db
+        ports:
+        - name: postgres
+          containerPort: 5432
+        {%- endif %}
+        securityContext:
+          capabilities:
+            drop:
+              - all
+            add:
+              - CHOWN
+              - SETGID
+              - SETUID
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-volume
+      volumes:
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${{ values.name }}-db
+  labels:
+    name: ${{ values.name }}-db
+    app.kubernetes.io/name: ${{ values.name }}-db
+    app.kubernetes.io/part-of: sock-shop
+  namespace: ${{ values.namespace }}
+spec:
+  ports:
+  {%- if values.database == 'mongodb' %}
+  - port: 27017
+    targetPort: 27017
+    name: mongo
+  {%- elif values.database == 'mysql' %}
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  {%- elif values.database == 'redis' %}
+  - port: 6379
+    targetPort: 6379
+    name: redis
+  {%- elif values.database == 'postgresql' %}
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  {%- endif %}
+  selector:
+    name: ${{ values.name }}-db
+{%- endif %}

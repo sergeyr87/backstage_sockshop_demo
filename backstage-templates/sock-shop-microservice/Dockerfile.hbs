@@ -1,0 +1,99 @@
+# skeleton/Dockerfile
+
+{%- if values.language == 'java' %}
+# Multi-stage build for Java/Spring Boot
+FROM openjdk:11-jdk-slim as builder
+
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+
+RUN ./mvnw clean package -DskipTests
+
+FROM openjdk:11-jre-slim
+
+RUN groupadd -r ${{ values.name }} && useradd -r -g ${{ values.name }} ${{ values.name }}
+
+WORKDIR /app
+COPY --from=builder /app/target/${{ values.name }}-*.jar app.jar
+
+USER ${{ values.name }}
+
+EXPOSE ${{ values.port }}
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+{%- elif values.language == 'go' %}
+# Multi-stage build for Go
+FROM golang:1.19-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ${{ values.name }} .
+
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+RUN addgroup -g 10001 -S ${{ values.name }} && adduser -u 10001 -S ${{ values.name }} -G ${{ values.name }}
+
+WORKDIR /
+
+COPY --from=builder /app/${{ values.name }} .
+
+USER ${{ values.name }}:${{ values.name }}
+
+EXPOSE ${{ values.port }}
+
+ENTRYPOINT ["./${{ values.name }}"]
+
+{%- elif values.language == 'nodejs' %}
+# Multi-stage build for Node.js
+FROM node:16-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+FROM node:16-alpine
+
+RUN addgroup -g 10001 -S ${{ values.name }} && adduser -u 10001 -S ${{ values.name }} -G ${{ values.name }}
+
+WORKDIR /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+USER ${{ values.name }}
+
+EXPOSE ${{ values.port }}
+
+CMD ["node", "server.js"]
+
+{%- elif values.language == 'python' %}
+# Multi-stage build for Python
+FROM python:3.9-slim AS builder
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+FROM python:3.9-slim
+
+RUN groupadd -r ${{ values.name }} && useradd -r -g ${{ values.name }} ${{ values.name }}
+
+WORKDIR /app
+
+COPY --from=builder /root/.local /home/${{ values.name }}/.local
+COPY . .
+
+USER ${{ values.name }}
+
+ENV PATH=/home/${{ values.name }}/.local/bin:$PATH
+
+EXPOSE ${{ values.port }}
+
+CMD ["python", "app.py"]
+{%- endif %}
